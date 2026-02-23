@@ -723,14 +723,9 @@ onAuthStateChanged(auth, async (user) => {
     ui.classList.add('show');
     await loadAll();
     document.getElementById('yearDisplay').textContent = year;
-    const cm = NOW.getMonth();
-    const todayWeekIndex = getWeekOfDay(year, cm, NOW.getDate());
-    openMonth = cm;
-    openWeek = todayWeekIndex;
-    sel = {
-      k: `Y${year}M${cm}W${todayWeekIndex}D${NOW.getDate()}`,
-      label: `${year} · ${MO[cm]} · Week ${todayWeekIndex+1} · ${NOW.getDate()} (${DA[NOW.getDay()]})`
-    };
+    openMonth = -1;
+    openWeek = -1;
+    sel = null;
     renderTree();
     renderGoals();
   } else {
