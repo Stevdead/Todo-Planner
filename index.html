@@ -21,7 +21,7 @@ html, body {
   background: var(--bg);
   color: var(--text);
   font-family: Arial, sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   height: 100%;
   overflow: hidden;
 }
@@ -297,13 +297,107 @@ html, body {
   .node-label { font-size: 14px; }
   .node-label.dim { font-size: 13px; }
 }
+
+/* TODAY PANEL */
+.today-panel {
+  flex-shrink: 0;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.today-panel.collapsed { max-height: 36px; }
+.today-panel.expanded { max-height: 260px; }
+
+.today-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.today-toggle-left {
+  display: flex; align-items: center; gap: 10px;
+}
+.today-label {
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.5px;
+}
+.today-date {
+  font-size: 11px;
+  color: var(--selected);
+}
+.today-arrow {
+  font-size: 10px;
+  color: var(--dim);
+  transition: transform 0.2s;
+}
+.today-panel.expanded .today-arrow { transform: rotate(180deg); }
+
+.today-content {
+  overflow-y: auto;
+  max-height: 220px;
+  padding: 0 16px 12px;
+  scrollbar-width: none;
+  display: flex;
+  gap: 20px;
+}
+.today-content::-webkit-scrollbar { display: none; }
+
+.today-section {
+  flex: 1;
+  min-width: 0;
+}
+.today-section-label {
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.today-goal-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.today-check {
+  width: 10px; height: 10px;
+  border: 1px solid var(--dim);
+  border-radius: 2px;
+  flex-shrink: 0;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.today-check.done { background: var(--selected); border-color: var(--selected); }
+.today-check.done::after {
+  content: '';
+  position: absolute;
+  left: 1.5px; top: -1px;
+  width: 4px; height: 7px;
+  border-right: 1.5px solid #222;
+  border-bottom: 1.5px solid #222;
+  transform: rotate(45deg);
+}
+.today-goal-name {
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.today-goal-name.done { color: var(--dim); text-decoration: line-through; }
+.today-empty { font-size: 12px; color: var(--dim); }
+
 </style>
 </head>
 <body>
 <!-- Login screen -->
 <div class="login-screen" id="loginScreen">
-  <div class="login-title">Todo-Planner</div>
-  <div class="login-sub">Google 계정으로 로그인하여<br>시작하기</div>
+  <div class="login-title">Planner</div>
+  <div class="login-sub">Google 계정으로 로그인해서<br>멋진 계획을 시작하세요!</div>
   <button class="login-btn" id="loginBtn">
     <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
     Google로 로그인
@@ -323,6 +417,18 @@ html, body {
       <div class="goal-hint" id="goalHint">select a period →</div>
       <div id="goalList"></div>
     </div>
+
+<!-- Today Panel -->
+<div class="today-panel collapsed" id="todayPanel">
+  <div class="today-toggle" id="todayToggle">
+    <div class="today-toggle-left">
+      <span class="today-label">TODAY</span>
+      <span class="today-date" id="todayDateLabel"></span>
+    </div>
+    <span class="today-arrow">▲</span>
+  </div>
+  <div class="today-content" id="todayContent"></div>
+</div>
   </div>
 </div>
 
@@ -712,6 +818,91 @@ document.getElementById('addConfirmBtn').addEventListener('click', confirmAdd);
 document.getElementById('addInput').addEventListener('keydown', e => { if(e.key==='Enter') confirmAdd(); if(e.key==='Escape') closeAdd(); });
 document.getElementById('addOverlay').addEventListener('click', closeAdd);
 
+
+// ── TODAY PANEL ────────────────────────────────────────
+let todayExpanded = false;
+
+function getTodayKeys() {
+  const y = NOW.getFullYear();
+  const m = NOW.getMonth();
+  const d = NOW.getDate();
+  const wi = getWeekOfDay(y, m, d);
+  return {
+    day:   `Y${y}M${m}W${wi}D${d}`,
+    week:  `Y${y}M${m}W${wi}`,
+    month: `Y${y}M${m}`
+  };
+}
+
+function renderTodayPanel() {
+  const panel = document.getElementById('todayPanel');
+  const content = document.getElementById('todayContent');
+  const dateLabel = document.getElementById('todayDateLabel');
+
+  // Date label
+  const d = NOW;
+  dateLabel.textContent = `${d.getFullYear()} · ${MO[d.getMonth()]} · ${d.getDate()} (${DA[d.getDay()]})`;
+
+  const keys = getTodayKeys();
+  const sections = [
+    { label: 'TODAY', key: keys.day },
+    { label: 'THIS WEEK', key: keys.week },
+    { label: 'THIS MONTH', key: keys.month },
+  ];
+
+  content.innerHTML = '';
+  sections.forEach(({ label, key }) => {
+    const sec = document.createElement('div');
+    sec.className = 'today-section';
+
+    const lbl = document.createElement('div');
+    lbl.className = 'today-section-label';
+    lbl.textContent = label;
+    sec.appendChild(lbl);
+
+    const goals = getG(key);
+    if (goals.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'today-empty';
+      empty.textContent = '—';
+      sec.appendChild(empty);
+    } else {
+      goals.forEach((g, i) => {
+        const item = document.createElement('div');
+        item.className = 'today-goal-item';
+
+        const check = document.createElement('div');
+        check.className = 'today-check' + (g.done ? ' done' : '');
+        check.addEventListener('click', () => {
+          const gs = getG(key);
+          gs[i].done = !gs[i].done;
+          setG(key, gs);
+          renderTodayPanel();
+          renderGoals(); // refresh main panel too
+        });
+
+        const name = document.createElement('div');
+        name.className = 'today-goal-name' + (g.done ? ' done' : '');
+        name.textContent = g.title;
+
+        item.appendChild(check);
+        item.appendChild(name);
+        sec.appendChild(item);
+      });
+    }
+
+    content.appendChild(sec);
+  });
+}
+
+document.getElementById('todayToggle').addEventListener('click', () => {
+  const panel = document.getElementById('todayPanel');
+  todayExpanded = !todayExpanded;
+  panel.classList.toggle('collapsed', !todayExpanded);
+  panel.classList.toggle('expanded', todayExpanded);
+  if (todayExpanded) renderTodayPanel();
+});
+
 // ── AUTH STATE & INIT ────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
   if (user) {
@@ -728,6 +919,7 @@ onAuthStateChanged(auth, async (user) => {
     sel = null;
     renderTree();
     renderGoals();
+    renderTodayPanel();
   } else {
     _uid = null;
     _cache = {};
