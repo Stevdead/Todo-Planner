@@ -264,6 +264,34 @@ html, body {
 .add-btns button { background: none; border: none; font-family: Arial, sans-serif; font-size: 13px; cursor: pointer; color: var(--dim); }
 .add-btns .ok { color: var(--selected); }
 
+/* LOGIN SCREEN */
+.login-screen {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--bg);
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px;
+}
+.login-screen.show { display: flex; }
+.login-title { font-size: 20px; color: var(--text); margin-bottom: 8px; }
+.login-sub { font-size: 13px; color: var(--dim); margin-bottom: 16px; }
+.login-btn {
+  background: none; border: 1px solid var(--line);
+  color: var(--text); font-family: Arial, sans-serif;
+  font-size: 14px; padding: 12px 28px; border-radius: 8px;
+  cursor: pointer; display: flex; align-items: center; gap: 10px;
+  transition: border-color 0.15s;
+}
+.login-btn:hover { border-color: var(--selected); color: var(--selected); }
+
+/* USER INFO */
+.user-info {
+  display: none;
+  font-size: 11px; color: var(--dim);
+  cursor: pointer; margin-left: 10px;
+}
+.user-info.show { display: inline; }
+
 @media (max-width: 480px) {
   .tree-panel { width: 140px; padding-left: 12px; }
   .node-label { font-size: 14px; }
@@ -272,10 +300,21 @@ html, body {
 </style>
 </head>
 <body>
-<div class="app">
+<!-- Login screen -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-title">목표 플래너</div>
+  <div class="login-sub">Google 계정으로 로그인하면<br>모든 기기에서 동기화돼요</div>
+  <button class="login-btn" onclick="loginWithGoogle()">
+    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+    Google로 로그인
+  </button>
+</div>
+
+<div class="app" id="mainApp" style="display:none;">
   <div class="year-title">
     <span id="yearDisplay" onclick="selectYear()" style="cursor:pointer;color:var(--text);font-size:13px;"></span>
-    <span onclick="openYearOverlay()" style="cursor:pointer;color:var(--dim);font-size:11px;margin-left:8px;">·  change</span>
+    <span onclick="openYearOverlay()" style="cursor:pointer;color:var(--dim);font-size:11px;margin-left:8px;">· change</span>
+    <span class="user-info" id="userInfo" onclick="logout()"></span>
   </div>
   <div class="main">
     <div class="tree-panel"><div id="treeRoot"></div></div>
@@ -307,7 +346,7 @@ html, body {
   </div>
 </div>
 
-<script>
+<script type="module">
 const NOW = new Date();
 let year = NOW.getFullYear();
 let sel = null;
@@ -319,23 +358,50 @@ let openWeek = -1; // week index within the open month
 const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const DA = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-// ── CLOUD STORAGE ──────────────────────────────────────
+// ── FIREBASE ────────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC1ENimZcEdzqUJRfeBeNGFAXQyDJYKzWg",
+  authDomain: "todo-planner-aa914.firebaseapp.com",
+  projectId: "todo-planner-aa914",
+  storageBucket: "todo-planner-aa914.firebasestorage.app",
+  messagingSenderId: "884371685964",
+  appId: "1:884371685964:web:ea9a9df9119a477bc62ae9"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+
 let _cache = {};
+let _uid = null;
 
 async function loadAll() {
+  if (!_uid) return;
   try {
-    const result = await window.storage.get('goalplanner_data');
-    _cache = result ? JSON.parse(result.value) : {};
-  } catch { _cache = {}; }
+    const snap = await getDoc(doc(db, 'users', _uid));
+    _cache = snap.exists() ? (snap.data().goals || {}) : {};
+  } catch(e) { console.error('load error', e); _cache = {}; }
 }
 
 async function persistAll() {
-  try { await window.storage.set('goalplanner_data', JSON.stringify(_cache)); }
+  if (!_uid) return;
+  try { await setDoc(doc(db, 'users', _uid), { goals: _cache }); }
   catch(e) { console.error('save error', e); }
 }
 
 function getG(k) { return _cache[k] || []; }
 function setG(k, g) { _cache[k] = g; persistAll(); }
+
+async function loginWithGoogle() {
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+  catch(e) { alert('로그인 실패: ' + e.message); }
+}
+
+function logout() { signOut(auth); }
 
 // Calendar weeks: Sun=start, Sat=end
 // Returns array of weeks, each week is array of {d, dn} (only days in this month)
@@ -607,22 +673,34 @@ function openYearOverlay() {
 function closeYearOverlay() { document.getElementById('yearOverlay').classList.remove('open'); }
 document.getElementById('yearOverlay').addEventListener('click', e => { if(e.target===document.getElementById('yearOverlay')||e.target.classList.contains('year-strip-wrap'))closeYearOverlay(); });
 
-// ── INIT ────────────────────────────────────────────────
-async function init() {
-  await loadAll();
-  document.getElementById('yearDisplay').textContent = year;
-  const cm = NOW.getMonth();
-  const todayWeekIndex = getWeekOfDay(year, cm, NOW.getDate());
-  openMonth = cm;
-  openWeek = todayWeekIndex;
-  sel = {
-    k: `Y${year}M${cm}W${todayWeekIndex}D${NOW.getDate()}`,
-    label: `${year} · ${MO[cm]} · Week ${todayWeekIndex+1} · ${NOW.getDate()} (${DA[NOW.getDay()]})`
-  };
-  renderTree();
-  renderGoals();
-}
-init();
+// ── AUTH STATE & INIT ────────────────────────────────────
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    _uid = user.uid;
+    document.getElementById('loginScreen').classList.remove('show');
+    document.getElementById('mainApp').style.display = 'flex';
+    const ui = document.getElementById('userInfo');
+    ui.textContent = user.displayName || user.email;
+    ui.classList.add('show');
+    await loadAll();
+    document.getElementById('yearDisplay').textContent = year;
+    const cm = NOW.getMonth();
+    const todayWeekIndex = getWeekOfDay(year, cm, NOW.getDate());
+    openMonth = cm;
+    openWeek = todayWeekIndex;
+    sel = {
+      k: `Y${year}M${cm}W${todayWeekIndex}D${NOW.getDate()}`,
+      label: `${year} · ${MO[cm]} · Week ${todayWeekIndex+1} · ${NOW.getDate()} (${DA[NOW.getDay()]})`
+    };
+    renderTree();
+    renderGoals();
+  } else {
+    _uid = null;
+    _cache = {};
+    document.getElementById('loginScreen').classList.add('show');
+    document.getElementById('mainApp').style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
