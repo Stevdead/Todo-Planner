@@ -75,24 +75,28 @@ html,body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;fo
 .goal-detail.open{display:block}
 .goal-detail input{background:transparent;border:none;border-bottom:1px solid var(--line);color:var(--dim);font-size:13px;font-family:Arial,sans-serif;width:100%;outline:none;padding:3px 0}
 
-/* TODAY OVERLAY - slides up */
-.today-overlay{
-  position:fixed;inset:0;z-index:120;background:var(--bg);flex-direction:column;
-  transform:translateY(100%);transition:transform 0.32s cubic-bezier(0.32,0.72,0,1);
-  display:flex;pointer-events:none;
-}
-.today-overlay.open{transform:translateY(0);pointer-events:all}
+/* ── TODAY PANEL (바텀 바 + 전체화면) ── */
+.today-panel{flex-shrink:0;border-top:1px solid var(--line);background:var(--bg);height:34px}
+.today-toggle{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;cursor:pointer;user-select:none;height:34px}
+.today-toggle-left{display:flex;align-items:center;gap:10px}
+.today-label{font-size:11px;color:var(--dim);letter-spacing:0.5px}
+.today-date{font-size:11px;color:var(--sel)}
+.today-arrow{font-size:10px;color:var(--dim)}
+/* 전체화면 today 오버레이 */
+.today-overlay{display:none;position:fixed;inset:0;z-index:120;background:var(--bg);flex-direction:column}
+.today-overlay.open{display:flex}
 .today-overlay-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
 .today-overlay-title{font-size:14px;color:var(--text)}
 .today-overlay-date{font-size:11px;color:var(--sel)}
 .today-close{font-size:20px;color:var(--dim);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center}
 .today-overlay-body{flex:1;overflow-y:auto;padding:20px 16px;scrollbar-width:none;display:flex;flex-direction:column;gap:24px}
 .today-overlay-body::-webkit-scrollbar{display:none}
+.today-section{}
 .today-section-label{font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:8px}
 .today-goal-item{display:flex;align-items:center;gap:10px;margin-bottom:9px}
 .today-check{width:12px;height:12px;border:1px solid var(--dim);border-radius:2px;flex-shrink:0;position:relative;cursor:pointer;transition:all 0.15s}
 .today-check.done{background:var(--sel);border-color:var(--sel)}
-.today-check.done::after{content:\'\';position:absolute;left:2px;top:-1px;width:5px;height:8px;border-right:1.5px solid var(--bg);border-bottom:1.5px solid var(--bg);transform:rotate(45deg)}
+.today-check.done::after{content:'';position:absolute;left:2px;top:-1px;width:5px;height:8px;border-right:1.5px solid #222;border-bottom:1.5px solid #222;transform:rotate(45deg)}
 .today-goal-name{font-size:14px;color:var(--text);overflow:hidden;text-overflow:ellipsis}
 .today-goal-name.done{color:var(--dim);text-decoration:line-through}
 .today-empty{font-size:13px;color:var(--dim)}
@@ -123,18 +127,34 @@ html,body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;fo
 .add-btns button{background:none;border:none;font-family:Arial,sans-serif;font-size:13px;cursor:pointer;color:var(--dim)}
 .add-btns .ok{color:var(--sel)}
 
-/* OPTION MENU */
-.option-menu{display:none;position:fixed;z-index:200;top:44px;right:14px;background:#2a2a2a;border:1px solid var(--line);border-radius:10px;min-width:190px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+/* ── OPTION DROPDOWN ── */
+.option-menu{
+  display:none;position:fixed;z-index:200;
+  top:44px;right:14px;
+  background:#5555554b;border:1px solid var(--line);
+  border-radius:10px;min-width:180px;overflow:hidden;
+  box-shadow:0 8px 24px rgba(115, 115, 115, 0.19);
+}
 .option-menu.open{display:block}
-.option-item{padding:13px 16px;font-size:14px;color:var(--text);cursor:pointer;transition:background 0.1s;border-bottom:1px solid var(--line)}
+.option-item{
+  padding:13px 16px;font-size:14px;color:var(--text);
+  cursor:pointer;transition:background 0.1s;
+  border-bottom:1px solid var(--line);
+}
 .option-item:last-child{border-bottom:none}
 .option-item:hover{background:#333}
 .option-item .opt-sub{font-size:11px;color:var(--dim);margin-top:2px}
 
-/* SIDE PAGE */
-.side-page{display:none;position:fixed;inset:0;z-index:150;background:var(--bg);flex-direction:column}
+/* ── SIDE PAGE (account / calendar) ── */
+.side-page{
+  display:none;position:fixed;inset:0;z-index:150;
+  background:var(--bg);flex-direction:column;
+}
 .side-page.open{display:flex}
-.side-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
+.side-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0;
+}
 .side-title{font-size:14px;color:var(--text)}
 .side-close{font-size:20px;color:var(--dim);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center}
 .side-body{flex:1;overflow-y:auto;padding:20px 16px;scrollbar-width:none}
@@ -187,13 +207,6 @@ html,body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;fo
 .cal-grid-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column}
 .cal-day-headers{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--line);flex-shrink:0}
 .cal-day-header{font-size:11px;color:var(--dim);text-align:center;padding:6px 0;letter-spacing:0.3px}
-/* Goal as checkbox+text in calendar (no bg highlight) */
-.cal-goal-row{display:flex;align-items:center;gap:3px;margin-bottom:2px;cursor:pointer}
-.cal-goal-check{width:6px;height:6px;border:1px solid var(--dim);border-radius:1px;flex-shrink:0;position:relative}
-.cal-goal-check.done{background:var(--sel);border-color:var(--sel)}
-.cal-goal-text{font-size:9px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
-.cal-goal-text.done{color:var(--dim);text-decoration:line-through}
-.cal-more{font-size:9px;color:var(--dim);padding:0 2px}
 
 .cal-grid{
   display:grid;grid-template-columns:repeat(7,1fr);
@@ -231,15 +244,10 @@ html,body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;fo
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   cursor:pointer;
 }
-/* Goal as checkbox+text in calendar (no bg highlight) */
-.cal-goal-row{display:flex;align-items:center;gap:3px;margin-bottom:2px;cursor:pointer}
-.cal-goal-check{width:6px;height:6px;border:1px solid var(--dim);border-radius:1px;flex-shrink:0;position:relative}
-.cal-goal-check.done{background:var(--sel);border-color:var(--sel)}
-.cal-goal-text{font-size:9px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
-.cal-goal-text.done{color:var(--dim);text-decoration:line-through}
-.cal-more{font-size:9px;color:var(--dim);padding:0 2px}
+.cal-goal-chip.done{color:var(--dim);text-decoration:line-through;border-color:var(--dim);background:transparent}
+.cal-more{font-size:10px;color:var(--dim);padding:1px 4px}
 
-/* LOGIN */
+/* ── LOGIN ── */
 .login-screen{display:none;position:fixed;inset:0;z-index:200;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;gap:16px}
 .login-screen.show{display:flex}
 .login-title{font-size:20px;color:var(--text);margin-bottom:8px}
@@ -261,7 +269,7 @@ html,body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;fo
   <div class="login-title">Early Tech Tree Planner</div>
   <div class="login-sub">Start your<br>Productive Life</div>
   <button class="login-btn" id="loginBtn">
-    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s .27-3 .76-4l-7 .6c-.9 .9 - .9 - .9 - .9 - .9 - .9 - .9 - .9 - .9 - .9 - .9 - .9 - .9 - .9 - .9 - .9 - .9 - .9 - .9"></svg>
     Login with Google
   </button>
 </div>
@@ -319,10 +327,13 @@ html,body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;fo
   </div>
 </div>
 
-<!-- TODAY OVERLAY -->
+<!-- TODAY OVERLAY (전체화면) -->
 <div class="today-overlay" id="todayOverlay">
   <div class="today-overlay-header">
-    <div><div class="today-overlay-title">TODAY</div><div class="today-overlay-date" id="todayOverlayDate"></div></div>
+    <div>
+      <div class="today-overlay-title">TODAY</div>
+      <div class="today-overlay-date" id="todayOverlayDate"></div>
+    </div>
     <div class="today-close" id="todayClose">✕</div>
   </div>
   <div class="today-overlay-body" id="todayContent"></div>
@@ -330,13 +341,7 @@ html,body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;fo
 
 <!-- YEAR OVERLAY -->
 <div class="year-overlay" id="yearOverlay">
-  <div class="year-picker-wrap">
-    <button class="year-nav" id="yearNavPrev">‹</button>
-    <div class="year-picker-viewport">
-      <div class="year-picker-track" id="yearPickerTrack"></div>
-    </div>
-    <button class="year-nav" id="yearNavNext">›</button>
-  </div>
+  <div class="year-picker" id="yearPicker"></div>
   <div class="overlay-close" id="yearOverlayClose">Close</div>
 </div>
 
@@ -467,25 +472,35 @@ async function loginWithGoogle() {
 }
 function logout() { signOut(auth); }
 
-// ── HELPERS ──────────────────────────────────────────
-function getCalendarWeeks(y,m){
-  const firstDay=new Date(y,m,1).getDay(), daysInMonth=new Date(y,m+1,0).getDate();
-  const weeks=[];let day=1-firstDay;
-  while(day<=daysInMonth){const week=[];
-    for(let i=0;i<7;i++,day++)if(day>=1&&day<=daysInMonth)week.push({d:day,dn:DA[i]});
-    if(week.length)weeks.push(week);}
+// ── HELPERS ────────────────────────────────────────────
+function getCalendarWeeks(y, m) {
+  const firstDay = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const weeks = [];
+  let day = 1 - firstDay;
+  while (day <= daysInMonth) {
+    const week = [];
+    for (let i = 0; i < 7; i++, day++) {
+      if (day >= 1 && day <= daysInMonth) week.push({ d: day, dn: DA[i] });
+    }
+    if (week.length) weeks.push(week);
+  }
   return weeks;
 }
-function getWeekOfDay(y,m,d){
-  const weeks=getCalendarWeeks(y,m);
-  for(let i=0;i<weeks.length;i++)if(weeks[i].some(dd=>dd.d===d))return i;
+function getWeekOfDay(y, m, d) {
+  const weeks = getCalendarWeeks(y, m);
+  for (let i = 0; i < weeks.length; i++)
+    if (weeks[i].some(dd => dd.d === d)) return i;
   return 0;
 }
-function isToday(m,d){return year===NOW.getFullYear()&&m===NOW.getMonth()&&d===NOW.getDate();}
-function parseTags(detail){return detail?(detail.match(/#[\w\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]+/g)||[]):[]; }
-function fmtTime(s){const m=Math.floor(s/60),sec=s%60;return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');}
-function isDay(k){return /D\d+$/.test(k);}
-
+function isToday(m, d) { return year===NOW.getFullYear()&&m===NOW.getMonth()&&d===NOW.getDate(); }
+function parseTags(detail) {
+  if (!detail) return [];
+  return (detail.match(/#[\w\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]+/g) || []);
+}
+function applyColor(hex) {
+  document.documentElement.style.setProperty('--sel', hex);
+}
 
 // ── TREE ───────────────────────────────────────────────
 function selectYear() {
@@ -671,72 +686,110 @@ function confirmAdd() {
   renderTodayPanel();
 }
 
-// ── YEAR OVERLAY ──────────────────────────────────────
-function buildYearTrack(){
-  const track=document.getElementById('yearPickerTrack');
-  track.innerHTML='';
-  const el=document.createElement('span');el.className='year-ellipsis';el.textContent='…';track.appendChild(el);
-  [-2,-1,0,1,2].forEach(offset=>{
-    const y=yearDisplay+offset;
-    const div=document.createElement('div');
-    div.className='year-opt'+(offset===0?' active':(Math.abs(offset)===1?' near':''));
-    div.textContent=y;
-    div.onclick=()=>{
-      year=y;yearDisplay=y;
-      document.getElementById('yearDisplay').textContent=y;
-      openMonth=-1;openWeek=-1;sel=null;
-      renderTree();renderGoals();buildYearTrack();
-    };
-    track.appendChild(div);
-  });
-  const el2=document.createElement('span');el2.className='year-ellipsis';el2.textContent='…';track.appendChild(el2);
+// ── YEAR OVERLAY ───────────────────────────────────────
+function renderYearPicker() {
+  const picker = document.getElementById('yearPicker');
+  picker.innerHTML = '';
+  // 이전 버튼
+  const prev = document.createElement('button');
+  prev.className = 'year-nav-btn'; prev.textContent = '';
+  prev.onclick = () => { year--; renderYearPicker(); document.getElementById('yearDisplay').textContent = year; openMonth=-1;openWeek=-1;sel=null;renderTree();renderGoals(); };
+  picker.appendChild(prev);
+  // ... 이전
+  const el1 = document.createElement('span'); el1.className='year-picker-ellipsis'; el1.textContent='…'; picker.appendChild(el1);
+  // 이전 연도
+  const yPrev = document.createElement('div');
+  yPrev.className = 'year-opt near'; yPrev.textContent = year-1;
+  yPrev.onclick = () => { year=year-1; renderYearPicker(); document.getElementById('yearDisplay').textContent=year; openMonth=-1;openWeek=-1;sel=null;renderTree();renderGoals(); };
+  picker.appendChild(yPrev);
+  // 현재 연도
+  const yCur = document.createElement('div');
+  yCur.className = 'year-opt active'; yCur.textContent = year;
+  picker.appendChild(yCur);
+  // 다음 연도
+  const yNext = document.createElement('div');
+  yNext.className = 'year-opt near'; yNext.textContent = year+1;
+  yNext.onclick = () => { year=year+1; renderYearPicker(); document.getElementById('yearDisplay').textContent=year; openMonth=-1;openWeek=-1;sel=null;renderTree();renderGoals(); };
+  picker.appendChild(yNext);
+  // ... 다음
+  const el2 = document.createElement('span'); el2.className='year-picker-ellipsis'; el2.textContent='…'; picker.appendChild(el2);
+  // 다음 버튼
+  const next = document.createElement('button');
+  next.className = 'year-nav-btn'; next.textContent = '';
+  next.onclick = () => { year++; renderYearPicker(); document.getElementById('yearDisplay').textContent=year; openMonth=-1;openWeek=-1;sel=null;renderTree();renderGoals(); };
+  picker.appendChild(next);
 }
-function openYearOverlay(){yearDisplay=year;buildYearTrack();document.getElementById('yearOverlay').classList.add('open');}
-function closeYearOverlay(){document.getElementById('yearOverlay').classList.remove('open');}
-document.getElementById('yearNavPrev').addEventListener('click',()=>{yearDisplay--;buildYearTrack();});
-document.getElementById('yearNavNext').addEventListener('click',()=>{yearDisplay++;buildYearTrack();});
+function openYearOverlay() {
+  renderYearPicker();
+  document.getElementById('yearOverlay').classList.add('open');
+}
+function closeYearOverlay() { document.getElementById('yearOverlay').classList.remove('open'); }
 
-// ── TODAY PANEL ───────────────────────────────────────
-function getTodayKeys(){
-  const y=NOW.getFullYear(),m=NOW.getMonth(),d=NOW.getDate(),wi=getWeekOfDay(y,m,d);
-  return{day:`Y${y}M${m}W${wi}D${d}`,week:`Y${y}M${m}W${wi}`,month:`Y${y}M${m}`};
+// ── TODAY PANEL ────────────────────────────────────────
+function getTodayKeys() {
+  const y=NOW.getFullYear(), m=NOW.getMonth(), d=NOW.getDate();
+  const wi = getWeekOfDay(y, m, d);
+  return { day:`Y${y}M${m}W${wi}D${d}`, week:`Y${y}M${m}W${wi}`, month:`Y${y}M${m}` };
 }
-function renderTodayPanel(){
-  const ds=`${NOW.getFullYear()} · ${MO[NOW.getMonth()]} · ${NOW.getDate()} (${DA[NOW.getDay()]})`;
-  document.getElementById('todayDateLabel').textContent=ds;
-  document.getElementById('todayOverlayDate').textContent=ds;
-  const content=document.getElementById('todayContent');
-  const keys=getTodayKeys();
-  content.innerHTML='';
-  [{label:'TODAY',key:keys.day},{label:'THIS WEEK',key:keys.week},{label:'THIS MONTH',key:keys.month}].forEach(({label,key})=>{
-    const sec=document.createElement('div');
-    const lbl=document.createElement('div');lbl.className='today-section-label';lbl.textContent=label;sec.appendChild(lbl);
-    const goals=getG(key);
-    if(!goals.length){const e=document.createElement('div');e.className='today-empty';e.textContent='—';sec.appendChild(e);}
-    else goals.forEach((g,i)=>{
-      const item=document.createElement('div');item.className='today-goal-item';
-      const ck=document.createElement('div');ck.className='today-check'+(g.done?' done':'');
-      ck.addEventListener('click',()=>{const gs=getG(key);gs[i].done=!gs[i].done;setG(key,gs);renderTodayPanel();renderGoals();});
-      const nm=document.createElement('div');nm.className='today-goal-name'+(g.done?' done':'');nm.textContent=g.title;
-      item.appendChild(ck);item.appendChild(nm);sec.appendChild(item);
-    });
+function renderTodayPanel() {
+  const dateStr = `${NOW.getFullYear()} · ${MO[NOW.getMonth()]} · ${NOW.getDate()} (${DA[NOW.getDay()]})`;
+  document.getElementById('todayDateLabel').textContent = dateStr;
+  document.getElementById('todayOverlayDate').textContent = dateStr;
+
+  const content = document.getElementById('todayContent');
+  const keys = getTodayKeys();
+  const sections = [
+    { label:'TODAY', key:keys.day },
+    { label:'THIS WEEK', key:keys.week },
+    { label:'THIS MONTH', key:keys.month },
+  ];
+  content.innerHTML = '';
+  sections.forEach(({ label, key }) => {
+    const sec = document.createElement('div');
+    sec.className = 'today-section';
+    const lbl = document.createElement('div');
+    lbl.className = 'today-section-label';
+    lbl.textContent = label;
+    sec.appendChild(lbl);
+    const goals = getG(key);
+    if (!goals.length) {
+      const e = document.createElement('div');
+      e.className = 'today-empty'; e.textContent = '—';
+      sec.appendChild(e);
+    } else {
+      goals.forEach((g, i) => {
+        const item = document.createElement('div');
+        item.className = 'today-goal-item';
+        const check = document.createElement('div');
+        check.className = 'today-check' + (g.done?' done':'');
+        check.addEventListener('click', () => {
+          const gs = getG(key); gs[i].done = !gs[i].done;
+          setG(key, gs); renderTodayPanel(); renderGoals();
+        });
+        const name = document.createElement('div');
+        name.className = 'today-goal-name' + (g.done?' done':'');
+        name.textContent = g.title;
+        item.appendChild(check); item.appendChild(name);
+        sec.appendChild(item);
+      });
+    }
     content.appendChild(sec);
   });
 }
-document.getElementById('todayToggle').addEventListener('click',()=>{
-  renderTodayPanel();
-  document.getElementById('todayOverlay').classList.add('open');
-});
-document.getElementById('todayClose').addEventListener('click',()=>{
-  document.getElementById('todayOverlay').classList.remove('open');
-});
 
-
-// ── OPTION MENU ───────────────────────────────────────
-let optionOpen=false;
-function toggleOption(){optionOpen=!optionOpen;document.getElementById('optionMenu').classList.toggle('open',optionOpen);}
-function closeOption(){optionOpen=false;document.getElementById('optionMenu').classList.remove('open');}
-document.addEventListener('click',e=>{if(!e.target.closest('#optionBtn')&&!e.target.closest('#optionMenu'))closeOption();});
+// ── OPTION MENU ────────────────────────────────────────
+let optionOpen = false;
+function toggleOption() {
+  optionOpen = !optionOpen;
+  document.getElementById('optionMenu').classList.toggle('open', optionOpen);
+}
+function closeOption() {
+  optionOpen = false;
+  document.getElementById('optionMenu').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#optionBtn') && !e.target.closest('#optionMenu')) closeOption();
+});
 
 // ── ACCOUNT PAGE ───────────────────────────────────────
 function openAccountPage() {
