@@ -3,413 +3,315 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>📍Planner</title>
+<title>목표 플래너</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iI2U1YjhkMyIvPjwvc3ZnPg==">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iI2U1YjhkMyIvPjwvc3ZnPg==">
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#222222;--text:#efefef;--sel:#e5b8d3;--dim:#555555;--line:#3a3a3a;
+}
+html,body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;font-size:16px;height:100%;overflow:hidden}
 
-:root {
-  --bg: #222222;
-  --text: #efefef;
-  --selected: #e5b8d3;
-  --dim: #555555;
-  --line: #3a3a3a;
-}
+/* ── APP SHELL ── */
+.app{display:flex;flex-direction:column;height:100dvh}
 
-html, body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: Arial, sans-serif;
-  font-size: 16px;
-  height: 100%;
-  overflow: hidden;
+/* ── HEADER ── */
+.header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px 7px;flex-shrink:0;
 }
+.header-left{display:flex;align-items:center;gap:8px}
+.year-btn{font-size:13px;color:var(--text);cursor:pointer;user-select:none}
+.year-change{font-size:11px;color:var(--dim);cursor:pointer}
+.option-btn{
+  font-size:18px;color:var(--dim);cursor:pointer;
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  border-radius:6px;transition:color 0.15s;user-select:none;
+}
+.option-btn:hover{color:var(--text)}
+.header-sep{font-size:11px;color:var(--dim);flex-shrink:0}
+.header-name{font-size:11px;color:var(--sel);white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis}
+.header-motto{font-size:10px;color:var(--dim);white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+.header-left{display:flex;align-items:center;gap:6px;flex:1;min-width:0;overflow:hidden}
 
-.app {
-  display: flex;
-  flex-direction: column;
-  height: 100dvh;
-}
+/* ── MAIN ── */
+.main{display:flex;flex:1;min-height:0;overflow:hidden}
 
-/* TITLE */
-.year-title {
-  padding: 12px 16px 8px;
-  font-size: 12px;
-  color: var(--dim);
-  cursor: pointer;
-  user-select: none;
-  flex-shrink: 0;
-}
-.year-title span { color: var(--text); font-size: 13px; }
+/* ── TREE ── */
+.tree-panel{width:210px;flex-shrink:0;overflow-y:auto;overflow-x:hidden;padding:4px 0 20px 16px;scrollbar-width:none}
+.tree-panel::-webkit-scrollbar{display:none}
+.tree-node{position:relative}
+.node-row{display:flex;align-items:center;padding:4px 0;cursor:pointer;user-select:none;position:relative}
+.node-label{font-size:15px;color:var(--text);white-space:nowrap}
+.node-label.sel{color:var(--sel)}
+.node-label.dim{color:var(--dim);font-size:14px}
+.children{display:none;margin-left:16px;position:relative}
+.children.open{display:block}
+.children::before{content:'';position:absolute;left:-10px;top:0;bottom:10px;width:1px;background:var(--line)}
+.children>.tree-node>.node-row::before{content:'';position:absolute;left:-10px;top:50%;width:10px;height:1px;background:var(--line)}
 
-/* MAIN */
-.main {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
+/* ── GOAL PANEL ── */
+.goal-panel{flex:1;overflow-y:auto;padding:4px 14px 20px 20px;scrollbar-width:none;cursor:pointer}
+.goal-panel::-webkit-scrollbar{display:none}
+.breadcrumb{font-size:11px;color:var(--dim);margin-bottom:14px;pointer-events:none;letter-spacing:0.3px}
+.goal-hint{font-size:13px;color:var(--dim);margin-bottom:16px;pointer-events:none}
+.goal-item{margin-bottom:12px}
+.goal-title-row{display:flex;align-items:center;gap:10px;cursor:pointer}
+.goal-check{width:12px;height:12px;border:1px solid var(--dim);border-radius:2px;flex-shrink:0;position:relative;transition:all 0.15s;cursor:pointer}
+.goal-check.done{background:var(--sel);border-color:var(--sel)}
+.goal-check.done::after{content:'';position:absolute;left:2px;top:-1px;width:5px;height:8px;border-right:1.5px solid #222;border-bottom:1.5px solid #222;transform:rotate(45deg)}
+.goal-name{font-size:15px;color:var(--text);flex:1;min-width:0}
+.goal-name.done{color:var(--dim);text-decoration:line-through}
+.goal-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;margin-left:22px}
+.goal-tag{font-size:10px;color:var(--sel);opacity:0.8}
+.goal-arrow{font-size:11px;color:var(--dim);flex-shrink:0}
+.goal-del{font-size:11px;color:var(--dim);opacity:0;transition:opacity 0.1s;cursor:pointer;flex-shrink:0}
+.goal-title-row:hover .goal-del{opacity:0.7}
+.goal-detail{display:none;margin:5px 0 0 22px}
+.goal-detail.open{display:block}
+.goal-detail input{background:transparent;border:none;border-bottom:1px solid var(--line);color:var(--dim);font-size:13px;font-family:Arial,sans-serif;width:100%;outline:none;padding:3px 0}
 
-/* TREE PANEL */
-.tree-panel {
-  width: 210px;
-  flex-shrink: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 4px 0 60px 16px;
-  scrollbar-width: none;
-}
-.tree-panel::-webkit-scrollbar { display: none; }
+/* ── TODAY PANEL (바텀 바 + 전체화면) ── */
+.today-panel{flex-shrink:0;border-top:1px solid var(--line);background:var(--bg);height:34px}
+.today-toggle{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;cursor:pointer;user-select:none;height:34px}
+.today-toggle-left{display:flex;align-items:center;gap:10px}
+.today-label{font-size:11px;color:var(--dim);letter-spacing:0.5px}
+.today-date{font-size:11px;color:var(--sel)}
+.today-arrow{font-size:10px;color:var(--dim)}
+/* 전체화면 today 오버레이 */
+.today-overlay{display:none;position:fixed;inset:0;z-index:120;background:var(--bg);flex-direction:column}
+.today-overlay.open{display:flex}
+.today-overlay-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0}
+.today-overlay-title{font-size:14px;color:var(--text)}
+.today-overlay-date{font-size:11px;color:var(--sel)}
+.today-close{font-size:20px;color:var(--dim);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+.today-overlay-body{flex:1;overflow-y:auto;padding:20px 16px;scrollbar-width:none;display:flex;flex-direction:column;gap:24px}
+.today-overlay-body::-webkit-scrollbar{display:none}
+.today-section{}
+.today-section-label{font-size:10px;color:var(--dim);letter-spacing:1px;margin-bottom:8px}
+.today-goal-item{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.today-check{width:12px;height:12px;border:1px solid var(--dim);border-radius:2px;flex-shrink:0;position:relative;cursor:pointer;transition:all 0.15s}
+.today-check.done{background:var(--sel);border-color:var(--sel)}
+.today-check.done::after{content:'';position:absolute;left:2px;top:-1px;width:5px;height:8px;border-right:1.5px solid #222;border-bottom:1.5px solid #222;transform:rotate(45deg)}
+.today-goal-name{font-size:14px;color:var(--text);overflow:hidden;text-overflow:ellipsis}
+.today-goal-name.done{color:var(--dim);text-decoration:line-through}
+.today-empty{font-size:13px;color:var(--dim)}
 
-/* GOAL PANEL */
-.goal-panel {
-  flex: 1;
-  overflow-y: auto;
-  padding: 4px 16px 60px 22px;
-  scrollbar-width: none;
-  cursor: pointer;
-}
-.goal-panel::-webkit-scrollbar { display: none; }
+/* ── OVERLAYS BASE ── */
+.overlay{display:none;position:fixed;inset:0;z-index:100;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);background:rgba(34,34,34,0.75)}
+.overlay.open{display:block}
 
-/* TREE */
-.tree-node { position: relative; }
+/* ── YEAR OVERLAY ── */
+.year-overlay{display:none;position:fixed;inset:0;z-index:100;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:rgba(34,34,34,0.8);align-items:center;justify-content:center;flex-direction:column}
+.year-overlay.open{display:flex}
+.year-picker{display:flex;align-items:center;gap:0;user-select:none}
+.year-picker-ellipsis{font-size:20px;color:var(--dim);padding:0 20px;letter-spacing:3px}
+.year-opt{font-size:24px;color:var(--dim);cursor:pointer;padding:0 20px;white-space:nowrap;transition:color 0.15s,font-size 0.15s}
+.year-opt.active{color:var(--sel);font-size:44px;font-weight:300}
+.year-opt.near{color:var(--text);font-size:28px}
+.year-nav-btn{background:none;border:none;color:var(--dim);font-size:22px;cursor:pointer;padding:0 12px;transition:color 0.15s}
+.year-nav-btn:hover{color:var(--text)}
+.overlay-close{margin-top:28px;font-size:11px;color:var(--dim);cursor:pointer;letter-spacing:1px}
 
-.node-row {
-  display: flex;
-  align-items: center;
-  padding: 4px 0;
-  cursor: pointer;
-  user-select: none;
-  position: relative;
-}
+/* ── ADD OVERLAY ── */
+.add-overlay{display:none;position:fixed;inset:0;z-index:100;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);background:rgba(34,34,34,0.6);align-items:center;justify-content:center}
+.add-overlay.open{display:flex}
+.add-box{background:#2b2b2b;border:1px solid var(--line);border-radius:10px;padding:22px;width:290px;display:flex;flex-direction:column;gap:12px}
+.add-lbl{font-size:11px;color:var(--dim);letter-spacing:0.5px}
+.add-input{background:transparent;border:none;border-bottom:1px solid var(--line);color:var(--text);font-size:15px;font-family:Arial,sans-serif;outline:none;padding:4px 0;width:100%}
+.add-btns{display:flex;justify-content:flex-end;gap:16px;margin-top:4px}
+.add-btns button{background:none;border:none;font-family:Arial,sans-serif;font-size:13px;cursor:pointer;color:var(--dim)}
+.add-btns .ok{color:var(--sel)}
 
-.node-label {
-  font-size: 15px;
-  color: var(--text);
-  white-space: nowrap;
+/* ── OPTION DROPDOWN ── */
+.option-menu{
+  display:none;position:fixed;z-index:200;
+  top:44px;right:14px;
+  background:#2a2a2a;border:1px solid var(--line);
+  border-radius:10px;min-width:180px;overflow:hidden;
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);
 }
-.node-label.sel { color: var(--selected); }
-.node-label.dim { color: var(--dim); font-size: 14px; }
+.option-menu.open{display:block}
+.option-item{
+  padding:13px 16px;font-size:14px;color:var(--text);
+  cursor:pointer;transition:background 0.1s;
+  border-bottom:1px solid var(--line);
+}
+.option-item:last-child{border-bottom:none}
+.option-item:hover{background:#333}
+.option-item .opt-sub{font-size:11px;color:var(--dim);margin-top:2px}
 
-.children {
-  display: none;
-  margin-left: 16px;
-  position: relative;
+/* ── SIDE PAGE (account / calendar) ── */
+.side-page{
+  display:none;position:fixed;inset:0;z-index:150;
+  background:var(--bg);flex-direction:column;
 }
-.children.open { display: block; }
+.side-page.open{display:flex}
+.side-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;border-bottom:1px solid var(--line);flex-shrink:0;
+}
+.side-title{font-size:14px;color:var(--text)}
+.side-close{font-size:20px;color:var(--dim);cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+.side-body{flex:1;overflow-y:auto;padding:20px 16px;scrollbar-width:none}
+.side-body::-webkit-scrollbar{display:none}
 
-/* Vertical connector */
-.children::before {
-  content: '';
-  position: absolute;
-  left: -10px; top: 0; bottom: 10px;
-  width: 1px;
-  background: var(--line);
+/* ── ACCOUNT PAGE ── */
+.account-field{margin-bottom:20px}
+.account-label{font-size:11px;color:var(--dim);letter-spacing:0.5px;margin-bottom:6px}
+.account-input{
+  background:transparent;border:none;border-bottom:1px solid var(--line);
+  color:var(--text);font-size:15px;font-family:Arial,sans-serif;
+  outline:none;padding:4px 0;width:100%;
 }
+.account-avatar{
+  width:60px;height:60px;border-radius:50%;
+  background:var(--sel);display:flex;align-items:center;justify-content:center;
+  font-size:22px;color:#222;margin-bottom:20px;
+}
+.account-motto{font-size:12px;color:var(--dim);margin-top:4px;font-style:italic}
+.logout-btn{
+  background:none;border:1px solid var(--line);
+  color:var(--dim);font-family:Arial,sans-serif;font-size:13px;
+  padding:10px 20px;border-radius:8px;cursor:pointer;margin-top:10px;
+  transition:border-color 0.15s,color 0.15s;
+}
+.logout-btn:hover{border-color:var(--sel);color:var(--sel)}
 
-/* Horizontal connector per child */
-.children > .tree-node > .node-row::before {
-  content: '';
-  position: absolute;
-  left: -10px; top: 50%;
-  width: 10px; height: 1px;
-  background: var(--line);
+/* ── COLOR PICKER ── */
+.color-page-body{padding:20px 16px}
+.color-swatches{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
+.color-swatch{
+  width:40px;height:40px;border-radius:50%;cursor:pointer;
+  border:2px solid transparent;transition:transform 0.15s,border-color 0.15s;
 }
+.color-swatch:hover{transform:scale(1.1)}
+.color-swatch.active{border-color:var(--text)}
+.color-custom-row{margin-top:20px;display:flex;align-items:center;gap:12px}
+.color-custom-label{font-size:12px;color:var(--dim)}
+.color-custom-input{
+  background:transparent;border:none;border-bottom:1px solid var(--line);
+  color:var(--text);font-size:13px;font-family:Arial,sans-serif;
+  outline:none;padding:4px 0;width:90px;
+}
+.color-preview{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);flex-shrink:0;transition:background 0.2s}
 
-/* GOAL PANEL */
-.breadcrumb {
-  font-size: 11px;
-  color: var(--dim);
-  margin-bottom: 16px;
-  pointer-events: none;
-  letter-spacing: 0.3px;
-}
+/* ── CALENDAR PAGE ── */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:0;padding:0 0 12px 0;flex-shrink:0}
+.cal-nav-btn{background:none;border:1px solid var(--line);color:var(--dim);font-size:16px;cursor:pointer;padding:4px 12px;border-radius:6px;line-height:1}
+.cal-nav-btn:hover{color:var(--text);border-color:var(--text)}
+.cal-month-label{font-size:16px;color:var(--text);font-weight:normal}
+.cal-month-label b{font-weight:normal;color:var(--sel)}
+.cal-today-btn{background:none;border:1px solid var(--line);color:var(--dim);font-size:11px;cursor:pointer;padding:4px 10px;border-radius:6px}
+.cal-today-btn:hover{color:var(--text);border-color:var(--text)}
 
-.goal-hint {
-  font-size: 13px;
-  color: var(--dim);
-  margin-bottom: 18px;
-  pointer-events: none;
-}
+.cal-page-inner{display:flex;flex-direction:column;height:100%}
+.cal-grid-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.cal-day-headers{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--line);flex-shrink:0}
+.cal-day-header{font-size:11px;color:var(--dim);text-align:center;padding:6px 0;letter-spacing:0.3px}
 
-.goal-item { margin-bottom: 14px; }
+.cal-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  flex:1;overflow-y:auto;scrollbar-width:none;
+  border-left:1px solid var(--line);
+}
+.cal-grid::-webkit-scrollbar{display:none}
 
-.goal-title-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
+.cal-cell{
+  border-right:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  padding:4px 4px 6px;
+  min-height:80px;cursor:pointer;
+  transition:background 0.1s;
+  vertical-align:top;overflow:hidden;
 }
+.cal-cell:hover{background:rgba(255,255,255,0.03)}
+.cal-cell.selected{background:rgba(229,184,211,0.08)}
+.cal-num{
+  font-size:11px;color:var(--dim);text-align:right;
+  margin-bottom:3px;line-height:1.4;
+}
+.cal-cell.in-month .cal-num{color:var(--text)}
+.cal-cell.today .cal-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--sel);color:#222;font-size:11px;float:right;
+}
+.cal-goal-chip{
+  display:block;font-size:10px;color:var(--text);
+  background:rgba(229,184,211,0.18);
+  border-left:2px solid var(--sel);
+  padding:1px 4px;margin-bottom:2px;
+  border-radius:0 3px 3px 0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  cursor:pointer;
+}
+.cal-goal-chip.done{color:var(--dim);text-decoration:line-through;border-color:var(--dim);background:transparent}
+.cal-more{font-size:10px;color:var(--dim);padding:1px 4px}
 
-.goal-check {
-  width: 12px; height: 12px;
-  border: 1px solid var(--dim);
-  border-radius: 2px;
-  flex-shrink: 0;
-  position: relative;
-  transition: all 0.15s;
-  cursor: pointer;
-}
-.goal-check.done { background: var(--selected); border-color: var(--selected); }
-.goal-check.done::after {
-  content: '';
-  position: absolute;
-  left: 2px; top: -1px;
-  width: 5px; height: 8px;
-  border-right: 1.5px solid #222;
-  border-bottom: 1.5px solid #222;
-  transform: rotate(45deg);
-}
+/* ── LOGIN ── */
+.login-screen{display:none;position:fixed;inset:0;z-index:200;background:var(--bg);align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.login-screen.show{display:flex}
+.login-title{font-size:20px;color:var(--text);margin-bottom:8px}
+.login-sub{font-size:13px;color:var(--dim);margin-bottom:16px;text-align:center;line-height:1.6}
+.login-btn{background:none;border:1px solid var(--line);color:var(--text);font-family:Arial,sans-serif;font-size:14px;padding:12px 28px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:border-color 0.15s}
+.login-btn:hover{border-color:var(--sel);color:var(--sel)}
 
-.goal-name { font-size: 15px; color: var(--text); flex: 1; }
-.goal-name.done { color: var(--dim); text-decoration: line-through; }
-
-.goal-arrow { font-size: 11px; color: var(--dim); }
-.goal-del { font-size: 11px; color: var(--dim); opacity: 0; transition: opacity 0.1s; cursor: pointer; }
-.goal-title-row:hover .goal-del { opacity: 0.7; }
-
-.goal-detail {
-  display: none;
-  margin: 5px 0 0 22px;
+@media(max-width:480px){
+  .tree-panel{width:130px;padding-left:10px}
+  .node-label{font-size:14px}
+  .node-label.dim{font-size:13px}
 }
-.goal-detail.open { display: block; }
-.goal-detail input {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--line);
-  color: var(--dim);
-  font-size: 13px;
-  font-family: Arial, sans-serif;
-  width: 100%;
-  outline: none;
-  padding: 3px 0;
-}
-
-/* YEAR OVERLAY */
-.year-overlay {
-  display: none;
-  position: fixed; inset: 0; z-index: 100;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  background: rgba(34,34,34,0.8);
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-}
-.year-overlay.open { display: flex; }
-
-/* The year strip — full width, centered vertically */
-.year-strip-wrap {
-  width: 100%;
-  overflow: hidden;
-  position: relative;
-}
-
-.year-strip {
-  display: flex;
-  align-items: baseline;
-  gap: 40px;
-  overflow-x: auto;
-  padding: 20px 50vw; /* large padding so items can scroll to center */
-  scrollbar-width: none;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
-.year-strip::-webkit-scrollbar { display: none; }
-
-.year-opt {
-  font-size: 22px;
-  color: var(--dim);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color 0.15s, font-size 0.15s;
-  scroll-snap-align: center;
-  flex-shrink: 0;
-}
-.year-opt.center-year { color: var(--text); font-size: 36px; }
-.year-opt.near-year { color: #888; font-size: 26px; }
-.year-opt.active { color: var(--selected); }
-
-.overlay-close { margin-top: 28px; font-size: 11px; color: var(--dim); cursor: pointer; letter-spacing: 1px; }
-
-/* ADD OVERLAY */
-.add-overlay {
-  display: none;
-  position: fixed; inset: 0; z-index: 100;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  background: rgba(34,34,34,0.6);
-  align-items: center; justify-content: center;
-}
-.add-overlay.open { display: flex; }
-
-.add-box {
-  background: #2b2b2b;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 22px;
-  width: 290px;
-  display: flex; flex-direction: column; gap: 12px;
-}
-.add-lbl { font-size: 11px; color: var(--dim); letter-spacing: 0.5px; }
-.add-input {
-  background: transparent; border: none;
-  border-bottom: 1px solid var(--line);
-  color: var(--text); font-size: 15px;
-  font-family: Arial, sans-serif;
-  outline: none; padding: 4px 0; width: 100%;
-}
-.add-btns { display: flex; justify-content: flex-end; gap: 16px; margin-top: 4px; }
-.add-btns button { background: none; border: none; font-family: Arial, sans-serif; font-size: 13px; cursor: pointer; color: var(--dim); }
-.add-btns .ok { color: var(--selected); }
-
-/* LOGIN SCREEN */
-.login-screen {
-  display: none;
-  position: fixed; inset: 0; z-index: 200;
-  background: var(--bg);
-  align-items: center; justify-content: center;
-  flex-direction: column; gap: 16px;
-}
-.login-screen.show { display: flex; }
-.login-title { font-size: 20px; color: var(--text); margin-bottom: 8px; }
-.login-sub { font-size: 13px; color: var(--dim); margin-bottom: 16px; }
-.login-btn {
-  background: none; border: 1px solid var(--line);
-  color: var(--text); font-family: Arial, sans-serif;
-  font-size: 14px; padding: 12px 28px; border-radius: 8px;
-  cursor: pointer; display: flex; align-items: center; gap: 10px;
-  transition: border-color 0.15s;
-}
-.login-btn:hover { border-color: var(--selected); color: var(--selected); }
-
-/* USER INFO */
-.user-info {
-  display: none;
-  font-size: 11px; color: var(--dim);
-  cursor: pointer; margin-left: 10px;
-}
-.user-info.show { display: inline; }
-
-@media (max-width: 480px) {
-  .tree-panel { width: 140px; padding-left: 12px; }
-  .node-label { font-size: 14px; }
-  .node-label.dim { font-size: 13px; }
-}
-
-/* TODAY PANEL */
-.today-panel {
-  flex-shrink: 0;
-  border-top: 1px solid var(--line);
-  background: var(--bg);
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-}
-.today-panel.collapsed { height: 36px; }
-.today-panel.expanded { max-height: 260px; }
-
-.today-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
-  cursor: pointer;
-  user-select: none;
-}
-.today-toggle-left {
-  display: flex; align-items: center; gap: 10px;
-}
-.today-label {
-  font-size: 11px;
-  color: var(--dim);
-  letter-spacing: 0.5px;
-}
-.today-date {
-  font-size: 11px;
-  color: var(--selected);
-}
-.today-arrow {
-  font-size: 10px;
-  color: var(--dim);
-  transition: transform 0.2s;
-}
-.today-panel.expanded .today-arrow { transform: rotate(180deg); }
-
-.today-content {
-  overflow-y: auto;
-  max-height: 220px;
-  padding: 0 16px 12px;
-  scrollbar-width: none;
-  display: flex;
-  gap: 20px;
-}
-.today-content::-webkit-scrollbar { display: none; }
-
-.today-section {
-  flex: 1;
-  min-width: 0;
-}
-.today-section-label {
-  font-size: 10px;
-  color: var(--dim);
-  letter-spacing: 1px;
-  margin-bottom: 6px;
-}
-.today-goal-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-.today-check {
-  width: 10px; height: 10px;
-  border: 1px solid var(--dim);
-  border-radius: 2px;
-  flex-shrink: 0;
-  position: relative;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.today-check.done { background: var(--selected); border-color: var(--selected); }
-.today-check.done::after {
-  content: '';
-  position: absolute;
-  left: 1.5px; top: -1px;
-  width: 4px; height: 7px;
-  border-right: 1.5px solid #222;
-  border-bottom: 1.5px solid #222;
-  transform: rotate(45deg);
-}
-.today-goal-name {
-  font-size: 12px;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.today-goal-name.done { color: var(--dim); text-decoration: line-through; }
-.today-empty { font-size: 12px; color: var(--dim); }
-
 </style>
 </head>
 <body>
-<!-- Login screen -->
+
+<!-- LOGIN -->
 <div class="login-screen" id="loginScreen">
-  <div class="login-title">Planner</div>
-  <div class="login-sub">Google 계정으로 로그인하여<br>멋진 계획을 시작하기</div>
+  <div class="login-title">목표 플래너</div>
+  <div class="login-sub">Google 계정으로 로그인하면<br>모든 기기에서 동기화돼요</div>
   <button class="login-btn" id="loginBtn">
     <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
     Google로 로그인
   </button>
 </div>
 
-<div class="app" id="mainApp" style="display:none;">
-  <div class="year-title">
-    <span id="yearDisplay" style="cursor:pointer;color:var(--text);font-size:13px;"></span>
-    <span id="yearChangeBtn" style="cursor:pointer;color:var(--dim);font-size:11px;margin-left:8px;">· change</span>
-    <span class="user-info" id="userInfo"></span>
+<!-- MAIN APP -->
+<div class="app" id="mainApp" style="display:none">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <span class="year-btn" id="yearDisplay"></span>
+      <span class="year-change" id="yearChangeBtn">· change</span>
+      <span class="header-sep">·</span>
+      <span class="header-name" id="headerName"></span>
+      <span class="header-motto" id="headerMotto"></span>
+    </div>
+    <div class="option-btn" id="optionBtn">⋯</div>
   </div>
+
+  <!-- OPTION MENU -->
+  <div class="option-menu" id="optionMenu">
+    <div class="option-item" id="optAccountBtn">
+      계정 관리
+      <div class="opt-sub" id="optAccountSub">이름 · 모토 · 로그아웃</div>
+    </div>
+    <div class="option-item" id="optColorBtn">
+      선택 색상 변경
+      <div class="opt-sub">하이라이트 컬러</div>
+    </div>
+    <div class="option-item" id="optCalBtn">
+      달력
+      <div class="opt-sub">월별 목표 달력</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
   <div class="main">
     <div class="tree-panel"><div id="treeRoot"></div></div>
     <div class="goal-panel" id="goalPanel">
@@ -419,8 +321,8 @@ html, body {
     </div>
   </div>
 
-  <!-- Today Panel -->
-  <div class="today-panel collapsed" id="todayPanel">
+  <!-- TODAY BAR -->
+  <div class="today-panel" id="todayPanel">
     <div class="today-toggle" id="todayToggle">
       <div class="today-toggle-left">
         <span class="today-label">TODAY</span>
@@ -428,21 +330,30 @@ html, body {
       </div>
       <span class="today-arrow">▲</span>
     </div>
-    <div class="today-content" id="todayContent"></div>
   </div>
 </div>
 
-<!-- Year overlay -->
-<div class="year-overlay" id="yearOverlay">
-  <div class="year-strip-wrap">
-    <div class="year-strip" id="yearStrip"></div>
+<!-- TODAY OVERLAY (전체화면) -->
+<div class="today-overlay" id="todayOverlay">
+  <div class="today-overlay-header">
+    <div>
+      <div class="today-overlay-title">TODAY</div>
+      <div class="today-overlay-date" id="todayOverlayDate"></div>
+    </div>
+    <div class="today-close" id="todayClose">✕</div>
   </div>
+  <div class="today-overlay-body" id="todayContent"></div>
+</div>
+
+<!-- YEAR OVERLAY -->
+<div class="year-overlay" id="yearOverlay">
+  <div class="year-picker" id="yearPicker"></div>
   <div class="overlay-close" id="yearOverlayClose">esc</div>
 </div>
 
-<!-- Add overlay -->
+<!-- ADD OVERLAY -->
 <div class="add-overlay" id="addOverlay">
-  <div class="add-box" onclick="event.stopPropagation()">
+  <div class="add-box" id="addBox">
     <div class="add-lbl" id="addLbl"></div>
     <input class="add-input" id="addInput" placeholder="goal title..." autocomplete="off"/>
     <div class="add-btns">
@@ -452,19 +363,66 @@ html, body {
   </div>
 </div>
 
+<!-- ACCOUNT PAGE -->
+<div class="side-page" id="accountPage">
+  <div class="side-header">
+    <span class="side-title">계정 관리</span>
+    <span class="side-close" id="accountClose">✕</span>
+  </div>
+  <div class="side-body">
+    <div class="account-avatar" id="accountAvatar">?</div>
+    <div class="account-field">
+      <div class="account-label">계정 이름</div>
+      <input class="account-input" id="accountName" placeholder="이름을 입력하세요" autocomplete="off"/>
+    </div>
+    <div class="account-field">
+      <div class="account-label">모토</div>
+      <input class="account-input" id="accountMotto" placeholder="나의 모토를 입력하세요" autocomplete="off"/>
+    </div>
+    <button class="logout-btn" id="accountLogout">로그아웃</button>
+  </div>
+</div>
+
+<!-- COLOR PAGE -->
+<div class="side-page" id="colorPage">
+  <div class="side-header">
+    <span class="side-title">선택 색상 변경</span>
+    <span class="side-close" id="colorClose">✕</span>
+  </div>
+  <div class="side-body color-page-body">
+    <div class="account-label">프리셋</div>
+    <div class="color-swatches" id="colorSwatches"></div>
+    <div class="color-custom-row">
+      <span class="color-custom-label">직접 입력</span>
+      <input class="color-custom-input" id="colorCustomInput" placeholder="#e5b8d3" maxlength="7"/>
+      <div class="color-preview" id="colorPreview"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR PAGE -->
+<div class="side-page" id="calPage">
+  <div class="side-header">
+    <span class="side-title">달력</span>
+    <span class="side-close" id="calClose">✕</span>
+  </div>
+  <div class="side-body" style="padding:12px 0 0;display:flex;flex-direction:column;overflow:hidden">
+    <div style="padding:0 14px 0;flex-shrink:0">
+      <div class="cal-nav">
+        <span class="cal-month-label" id="calMonthLabel"></span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="cal-today-btn" id="calTodayBtn">Today</button>
+          <button class="cal-nav-btn" id="calPrev">‹</button>
+          <button class="cal-nav-btn" id="calNext">›</button>
+        </div>
+      </div>
+    </div>
+    <div class="cal-day-headers" id="calDayHeaders"></div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+</div>
+
 <script type="module">
-const NOW = new Date();
-let year = NOW.getFullYear();
-let sel = null;
-// expandedM: which month is open; only ONE at a time
-// expandedW: which week is open within that month; only ONE at a time
-let openMonth = -1;
-let openWeek = -1; // week index within the open month
-
-const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const DA = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-// ── FIREBASE ────────────────────────────────────────────
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -477,28 +435,40 @@ const firebaseConfig = {
   messagingSenderId: "884371685964",
   appId: "1:884371685964:web:ea9a9df9119a477bc62ae9"
 };
-
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 
-let _cache = {};
-let _uid = null;
+// ── STATE ──────────────────────────────────────────────
+const NOW = new Date();
+const MO = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DA = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
+let year = NOW.getFullYear();
+let sel = null;
+let openMonth = -1, openWeek = -1;
+let todayExpanded = false;
+let calYear = NOW.getFullYear(), calMonth = NOW.getMonth();
+let calSelDay = null;
+
+let _cache = {}, _uid = null, _meta = {};
+
+// ── FIREBASE ───────────────────────────────────────────
 async function loadAll() {
   if (!_uid) return;
   try {
     const snap = await getDoc(doc(db, 'users', _uid));
-    _cache = snap.exists() ? (snap.data().goals || {}) : {};
-  } catch(e) { console.error('load error', e); _cache = {}; }
+    if (snap.exists()) {
+      _cache = snap.data().goals || {};
+      _meta  = snap.data().meta  || {};
+    }
+  } catch(e) { console.error(e); }
 }
-
 async function persistAll() {
   if (!_uid) return;
-  try { await setDoc(doc(db, 'users', _uid), { goals: _cache }); }
-  catch(e) { console.error('save error', e); }
+  try { await setDoc(doc(db, 'users', _uid), { goals: _cache, meta: _meta }); }
+  catch(e) { console.error(e); }
 }
-
 function getG(k) { return _cache[k] || []; }
 function setG(k, g) { _cache[k] = g; persistAll(); }
 
@@ -506,51 +476,48 @@ async function loginWithGoogle() {
   try { await signInWithPopup(auth, new GoogleAuthProvider()); }
   catch(e) { alert('로그인 실패: ' + e.message); }
 }
-
 function logout() { signOut(auth); }
 
-// Calendar weeks: Sun=start, Sat=end
-// Returns array of weeks, each week is array of {d, dn} (only days in this month)
+// ── HELPERS ────────────────────────────────────────────
 function getCalendarWeeks(y, m) {
-  const firstDay = new Date(y, m, 1).getDay(); // 0=Sun
+  const firstDay = new Date(y, m, 1).getDay();
   const daysInMonth = new Date(y, m+1, 0).getDate();
   const weeks = [];
-  let day = 1 - firstDay; // could be negative (days from prev month we skip)
+  let day = 1 - firstDay;
   while (day <= daysInMonth) {
     const week = [];
     for (let i = 0; i < 7; i++, day++) {
-      if (day >= 1 && day <= daysInMonth) {
-        week.push({ d: day, dn: DA[i] });
-      }
+      if (day >= 1 && day <= daysInMonth) week.push({ d: day, dn: DA[i] });
     }
-    if (week.length > 0) weeks.push(week);
+    if (week.length) weeks.push(week);
   }
   return weeks;
 }
-
 function getWeekOfDay(y, m, d) {
   const weeks = getCalendarWeeks(y, m);
-  for (let i = 0; i < weeks.length; i++) {
+  for (let i = 0; i < weeks.length; i++)
     if (weeks[i].some(dd => dd.d === d)) return i;
-  }
   return 0;
 }
-
 function isToday(m, d) { return year===NOW.getFullYear()&&m===NOW.getMonth()&&d===NOW.getDate(); }
+function parseTags(detail) {
+  if (!detail) return [];
+  return (detail.match(/#[\w\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]+/g) || []);
+}
+function applyColor(hex) {
+  document.documentElement.style.setProperty('--sel', hex);
+}
 
+// ── TREE ───────────────────────────────────────────────
 function selectYear() {
-  const yk = `Y${year}`;
-  sel = { k: yk, label: `${year}` };
+  sel = { k: `Y${year}`, label: `${year}` };
   openMonth = -1; openWeek = -1;
-  renderGoals();
-  renderTree();
+  renderGoals(); renderTree();
 }
 
 function renderTree() {
   const root = document.getElementById('treeRoot');
   root.innerHTML = '';
-
-  // Year node at top
   const yk = `Y${year}`;
   const isSelY = sel && sel.k === yk;
   const yNode = document.createElement('div');
@@ -560,8 +527,6 @@ function renderTree() {
   yRow.onclick = e => { e.stopPropagation(); selectYear(); };
   yRow.innerHTML = `<span class="node-label${isSelY?' sel':''}">${year}${isSelY?'*':''}</span>`;
   yNode.appendChild(yRow);
-
-  // Month children always shown under year, connected
   const yCh = document.createElement('div');
   yCh.className = 'children open';
 
@@ -569,107 +534,75 @@ function renderTree() {
     const mk = `Y${year}M${m}`;
     const isSelM = sel && sel.k === mk;
     const mOpen = openMonth === m;
-
     const mNode = document.createElement('div');
     mNode.className = 'tree-node';
-
     const mRow = document.createElement('div');
     mRow.className = 'node-row';
-    mRow.onclick = e => { e.stopPropagation(); doSelect({k:mk, label:`${year} · ${MO[m]}`}); clickMonth(m); };
+    mRow.onclick = e => { e.stopPropagation(); doSelect({k:mk,label:`${year} · ${MO[m]}`}); clickMonth(m); };
     mRow.innerHTML = `<span class="node-label${isSelM?' sel':''}">${MO[m]}${isSelM?'*':''}</span>`;
     mNode.appendChild(mRow);
-
-    // Only render children if this month is open
     if (mOpen) {
       const mCh = document.createElement('div');
       mCh.className = 'children open';
-
-      const weeks = getCalendarWeeks(year, m);
-      weeks.forEach((wDays, wi) => {
+      getCalendarWeeks(year, m).forEach((wDays, wi) => {
         const wk = `Y${year}M${m}W${wi}`;
         const isSelW = sel && sel.k === wk;
         const wOpen = openMonth === m && openWeek === wi;
-
         const wNode = document.createElement('div');
         wNode.className = 'tree-node';
-
         const wRow = document.createElement('div');
         wRow.className = 'node-row';
-        wRow.onclick = e => { e.stopPropagation(); doSelect({k:wk, label:`${year} · ${MO[m]} · Week ${wi+1}`}); clickWeek(m, wi); };
+        wRow.onclick = e => { e.stopPropagation(); doSelect({k:wk,label:`${year} · ${MO[m]} · Week ${wi+1}`}); clickWeek(m, wi); };
         wRow.innerHTML = `<span class="node-label${isSelW?' sel':' dim'}">Week ${wi+1}${isSelW?'*':''}</span>`;
         wNode.appendChild(wRow);
-
-        // Only render day children if this week is open
         if (wOpen) {
           const wCh = document.createElement('div');
           wCh.className = 'children open';
-
           wDays.forEach(({d, dn}) => {
             const dk = `Y${year}M${m}W${wi}D${d}`;
             const isSelD = sel && sel.k === dk;
             const tod = isToday(m, d);
-
             const dNode = document.createElement('div');
             dNode.className = 'tree-node';
             const dRow = document.createElement('div');
             dRow.className = 'node-row';
-            dRow.onclick = e => { e.stopPropagation(); doSelect({k:dk, label:`${year} · ${MO[m]} · Week ${wi+1} · ${d} (${dn})`}); };
-            dRow.innerHTML = `<span class="node-label${isSelD?' sel':(tod&&!isSelD?'':' dim')}">${d} (${dn})${isSelD?'*':''}</span>`;
+            dRow.onclick = e => { e.stopPropagation(); doSelect({k:dk,label:`${year} · ${MO[m]} · Week ${wi+1} · ${d} (${dn})`}); };
+            dRow.innerHTML = `<span class="node-label${isSelD?' sel':(tod?'':' dim')}">${d} (${dn})${isSelD?'*':''}</span>`;
             dNode.appendChild(dRow);
             wCh.appendChild(dNode);
           });
-
           wNode.appendChild(wCh);
         }
-
         mCh.appendChild(wNode);
       });
-
       mNode.appendChild(mCh);
     }
-
     yCh.appendChild(mNode);
   }
-
   yNode.appendChild(yCh);
   root.appendChild(yNode);
 }
 
 function clickMonth(m) {
-  if (openMonth === m) {
-    openMonth = -1; openWeek = -1;
-  } else {
-    openMonth = m; openWeek = -1;
-  }
+  openMonth = openMonth === m ? -1 : m;
+  if (openMonth !== m) openWeek = -1;
   renderTree();
 }
-
 function clickWeek(m, wi) {
-  if (openMonth === m && openWeek === wi) {
-    openWeek = -1;
-  } else {
-    openMonth = m; openWeek = wi;
-  }
+  if (openMonth === m && openWeek === wi) openWeek = -1;
+  else { openMonth = m; openWeek = wi; }
   renderTree();
 }
-
-function doSelect(node) {
-  sel = node;
-  renderGoals();
-  renderTree();
-}
+function doSelect(node) { sel = node; renderGoals(); renderTree(); }
 
 // ── GOALS ──────────────────────────────────────────────
 function renderGoals() {
   const bc = document.getElementById('breadcrumb');
   const list = document.getElementById('goalList');
   const hint = document.getElementById('goalHint');
-
   if (!sel) { bc.textContent=''; hint.textContent='select a period →'; list.innerHTML=''; return; }
-
   bc.textContent = sel.label;
   hint.textContent = 'tap to add goal';
-
   const goals = getG(sel.k);
   list.innerHTML = '';
   goals.forEach((g, i) => {
@@ -701,228 +634,396 @@ function renderGoals() {
     titleRow.appendChild(arrow);
     titleRow.appendChild(del);
     titleRow.addEventListener('click', () => toggleDetail(i));
+    item.appendChild(titleRow);
+
+    // Tags row
+    const tags = parseTags(g.detail);
+    if (tags.length) {
+      const tagRow = document.createElement('div');
+      tagRow.className = 'goal-tags';
+      tags.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'goal-tag';
+        span.textContent = t;
+        tagRow.appendChild(span);
+      });
+      item.appendChild(tagRow);
+    }
 
     const detail = document.createElement('div');
     detail.className = 'goal-detail' + (g.open ? ' open' : '');
-
     const detailInput = document.createElement('input');
     detailInput.value = g.detail || '';
-    detailInput.placeholder = 'detail...';
+    detailInput.placeholder = 'detail... (#tag 으로 태그 추가)';
     detailInput.addEventListener('change', e => saveDetail(i, e.target.value));
     detailInput.addEventListener('click', e => e.stopPropagation());
-
     detail.appendChild(detailInput);
-    item.appendChild(titleRow);
     item.appendChild(detail);
     list.appendChild(item);
   });
 }
 
-function esc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function toggleDone(i){ if(!sel)return; const g=getG(sel.k); g[i].done=!g[i].done; setG(sel.k,g); renderGoals(); }
+function toggleDone(i){ if(!sel)return; const g=getG(sel.k); g[i].done=!g[i].done; setG(sel.k,g); renderGoals(); renderTodayPanel(); }
 function toggleDetail(i){ if(!sel)return; const g=getG(sel.k); g[i].open=!g[i].open; setG(sel.k,g); renderGoals(); }
-function saveDetail(i,v){ if(!sel)return; const g=getG(sel.k); g[i].detail=v; setG(sel.k,g); }
-function delGoal(i){ if(!sel)return; const g=getG(sel.k); g.splice(i,1); setG(sel.k,g); renderGoals(); }
+function saveDetail(i,v){ if(!sel)return; const g=getG(sel.k); g[i].detail=v; setG(sel.k,g); renderGoals(); }
+function delGoal(i){ if(!sel)return; const g=getG(sel.k); g.splice(i,1); setG(sel.k,g); renderGoals(); renderTodayPanel(); }
 
 function onGoalPanelClick(e) {
-  if(!sel) return;
-  if(e.target.closest('.goal-item')) return;
+  if (!sel) return;
+  if (e.target.closest('.goal-item')) return;
   openAdd();
 }
-
 function openAdd() {
-  if(!sel) return;
+  if (!sel) return;
   document.getElementById('addLbl').textContent = sel.label;
   document.getElementById('addInput').value = '';
   document.getElementById('addOverlay').classList.add('open');
-  setTimeout(()=>document.getElementById('addInput').focus(),100);
+  setTimeout(() => document.getElementById('addInput').focus(), 100);
 }
 function closeAdd() { document.getElementById('addOverlay').classList.remove('open'); }
 function confirmAdd() {
   const v = document.getElementById('addInput').value.trim();
-  if(!v||!sel){ closeAdd(); return; }
-  const g=getG(sel.k);
-  g.push({title:v,detail:'',done:false,open:false});
-  setG(sel.k,g);
+  if (!v || !sel) { closeAdd(); return; }
+  const g = getG(sel.k);
+  g.push({ title: v, detail: '', done: false, open: false });
+  setG(sel.k, g);
   closeAdd();
   renderGoals();
+  renderTodayPanel();
 }
-document.getElementById('addInput').addEventListener('keydown',e=>{ if(e.key==='Enter')confirmAdd(); if(e.key==='Escape')closeAdd(); });
-document.getElementById('addOverlay').addEventListener('click',closeAdd);
 
-// ── YEAR OVERLAY ────────────────────────────────────────
-// Scroll-based year picker: items change size based on proximity to center
+// ── YEAR OVERLAY ───────────────────────────────────────
+function renderYearPicker() {
+  const picker = document.getElementById('yearPicker');
+  picker.innerHTML = '';
+  // 이전 버튼
+  const prev = document.createElement('button');
+  prev.className = 'year-nav-btn'; prev.textContent = '‹';
+  prev.onclick = () => { year--; renderYearPicker(); document.getElementById('yearDisplay').textContent = year; openMonth=-1;openWeek=-1;sel=null;renderTree();renderGoals(); };
+  picker.appendChild(prev);
+  // ... 이전
+  const el1 = document.createElement('span'); el1.className='year-picker-ellipsis'; el1.textContent='…'; picker.appendChild(el1);
+  // 이전 연도
+  const yPrev = document.createElement('div');
+  yPrev.className = 'year-opt near'; yPrev.textContent = year-1;
+  yPrev.onclick = () => { year=year-1; renderYearPicker(); document.getElementById('yearDisplay').textContent=year; openMonth=-1;openWeek=-1;sel=null;renderTree();renderGoals(); };
+  picker.appendChild(yPrev);
+  // 현재 연도
+  const yCur = document.createElement('div');
+  yCur.className = 'year-opt active'; yCur.textContent = year;
+  picker.appendChild(yCur);
+  // 다음 연도
+  const yNext = document.createElement('div');
+  yNext.className = 'year-opt near'; yNext.textContent = year+1;
+  yNext.onclick = () => { year=year+1; renderYearPicker(); document.getElementById('yearDisplay').textContent=year; openMonth=-1;openWeek=-1;sel=null;renderTree();renderGoals(); };
+  picker.appendChild(yNext);
+  // ... 다음
+  const el2 = document.createElement('span'); el2.className='year-picker-ellipsis'; el2.textContent='…'; picker.appendChild(el2);
+  // 다음 버튼
+  const next = document.createElement('button');
+  next.className = 'year-nav-btn'; next.textContent = '›';
+  next.onclick = () => { year++; renderYearPicker(); document.getElementById('yearDisplay').textContent=year; openMonth=-1;openWeek=-1;sel=null;renderTree();renderGoals(); };
+  picker.appendChild(next);
+}
 function openYearOverlay() {
-  const strip = document.getElementById('yearStrip');
-  strip.innerHTML = '';
-  const cur = NOW.getFullYear();
-  const startY = cur - 5, endY = cur + 10;
-  const years = [];
-
-  for (let y = startY; y <= endY; y++) {
-    const el = document.createElement('div');
-    el.className = 'year-opt' + (y === year ? ' active' : '');
-    el.textContent = y;
-    el.dataset.y = y;
-    el.onclick = () => {
-      year = y;
-      document.getElementById('yearDisplay').textContent = y;
-      openMonth = -1; openWeek = -1; sel = null;
-      renderTree(); renderGoals(); closeYearOverlay();
-    };
-    strip.appendChild(el);
-    years.push(el);
-  }
-
+  renderYearPicker();
   document.getElementById('yearOverlay').classList.add('open');
-
-  // Update sizes based on scroll position
-  function updateSizes() {
-    const stripRect = strip.getBoundingClientRect();
-    const centerX = stripRect.left + stripRect.width / 2;
-    years.forEach(el => {
-      const rect = el.getBoundingClientRect();
-      const elCenter = rect.left + rect.width / 2;
-      const dist = Math.abs(elCenter - centerX);
-      el.classList.remove('center-year', 'near-year');
-      if (dist < 40) el.classList.add('center-year');
-      else if (dist < 100) el.classList.add('near-year');
-    });
-  }
-
-  strip.addEventListener('scroll', updateSizes);
-
-  // Scroll to selected year
-  setTimeout(() => {
-    const active = strip.querySelector('.active') || strip.querySelector(`[data-y="${cur}"]`);
-    if (active) {
-      const stripWidth = strip.offsetWidth;
-      const itemOffset = active.offsetLeft + active.offsetWidth / 2;
-      strip.scrollLeft = itemOffset - stripWidth / 2;
-    }
-    updateSizes();
-  }, 60);
 }
-
 function closeYearOverlay() { document.getElementById('yearOverlay').classList.remove('open'); }
-// ── EVENT LISTENERS ──────────────────────────────────────
-document.getElementById('loginBtn').addEventListener('click', loginWithGoogle);
-document.getElementById('yearDisplay').addEventListener('click', selectYear);
-document.getElementById('yearChangeBtn').addEventListener('click', openYearOverlay);
-document.getElementById('userInfo').addEventListener('click', logout);
-document.getElementById('yearOverlayClose').addEventListener('click', closeYearOverlay);
-document.getElementById('yearOverlay').addEventListener('click', e => { if(e.target===document.getElementById('yearOverlay')||e.target.classList.contains('year-strip-wrap')) closeYearOverlay(); });
-document.getElementById('goalPanel').addEventListener('click', onGoalPanelClick);
-document.getElementById('addCancelBtn').addEventListener('click', closeAdd);
-document.getElementById('addConfirmBtn').addEventListener('click', confirmAdd);
-document.getElementById('addInput').addEventListener('keydown', e => { if(e.key==='Enter') confirmAdd(); if(e.key==='Escape') closeAdd(); });
-document.getElementById('addOverlay').addEventListener('click', closeAdd);
-
 
 // ── TODAY PANEL ────────────────────────────────────────
-let todayExpanded = false;
-
 function getTodayKeys() {
-  const y = NOW.getFullYear();
-  const m = NOW.getMonth();
-  const d = NOW.getDate();
+  const y=NOW.getFullYear(), m=NOW.getMonth(), d=NOW.getDate();
   const wi = getWeekOfDay(y, m, d);
-  return {
-    day:   `Y${y}M${m}W${wi}D${d}`,
-    week:  `Y${y}M${m}W${wi}`,
-    month: `Y${y}M${m}`
-  };
+  return { day:`Y${y}M${m}W${wi}D${d}`, week:`Y${y}M${m}W${wi}`, month:`Y${y}M${m}` };
 }
-
 function renderTodayPanel() {
-  const panel = document.getElementById('todayPanel');
+  const dateStr = `${NOW.getFullYear()} · ${MO[NOW.getMonth()]} · ${NOW.getDate()} (${DA[NOW.getDay()]})`;
+  document.getElementById('todayDateLabel').textContent = dateStr;
+  document.getElementById('todayOverlayDate').textContent = dateStr;
+
   const content = document.getElementById('todayContent');
-  const dateLabel = document.getElementById('todayDateLabel');
-
-  // Date label
-  const d = NOW;
-  dateLabel.textContent = `${d.getFullYear()} · ${MO[d.getMonth()]} · ${d.getDate()} (${DA[d.getDay()]})`;
-
   const keys = getTodayKeys();
   const sections = [
-    { label: 'TODAY', key: keys.day },
-    { label: 'THIS WEEK', key: keys.week },
-    { label: 'THIS MONTH', key: keys.month },
+    { label:'TODAY', key:keys.day },
+    { label:'THIS WEEK', key:keys.week },
+    { label:'THIS MONTH', key:keys.month },
   ];
-
   content.innerHTML = '';
   sections.forEach(({ label, key }) => {
     const sec = document.createElement('div');
     sec.className = 'today-section';
-
     const lbl = document.createElement('div');
     lbl.className = 'today-section-label';
     lbl.textContent = label;
     sec.appendChild(lbl);
-
     const goals = getG(key);
-    if (goals.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'today-empty';
-      empty.textContent = '—';
-      sec.appendChild(empty);
+    if (!goals.length) {
+      const e = document.createElement('div');
+      e.className = 'today-empty'; e.textContent = '—';
+      sec.appendChild(e);
     } else {
       goals.forEach((g, i) => {
         const item = document.createElement('div');
         item.className = 'today-goal-item';
-
         const check = document.createElement('div');
-        check.className = 'today-check' + (g.done ? ' done' : '');
+        check.className = 'today-check' + (g.done?' done':'');
         check.addEventListener('click', () => {
-          const gs = getG(key);
-          gs[i].done = !gs[i].done;
-          setG(key, gs);
-          renderTodayPanel();
-          renderGoals(); // refresh main panel too
+          const gs = getG(key); gs[i].done = !gs[i].done;
+          setG(key, gs); renderTodayPanel(); renderGoals();
         });
-
         const name = document.createElement('div');
-        name.className = 'today-goal-name' + (g.done ? ' done' : '');
+        name.className = 'today-goal-name' + (g.done?' done':'');
         name.textContent = g.title;
-
-        item.appendChild(check);
-        item.appendChild(name);
+        item.appendChild(check); item.appendChild(name);
         sec.appendChild(item);
       });
     }
-
     content.appendChild(sec);
   });
 }
 
-document.getElementById('todayToggle').addEventListener('click', () => {
-  const panel = document.getElementById('todayPanel');
-  todayExpanded = !todayExpanded;
-  panel.classList.toggle('collapsed', !todayExpanded);
-  panel.classList.toggle('expanded', todayExpanded);
-  if (todayExpanded) renderTodayPanel();
+// ── OPTION MENU ────────────────────────────────────────
+let optionOpen = false;
+function toggleOption() {
+  optionOpen = !optionOpen;
+  document.getElementById('optionMenu').classList.toggle('open', optionOpen);
+}
+function closeOption() {
+  optionOpen = false;
+  document.getElementById('optionMenu').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#optionBtn') && !e.target.closest('#optionMenu')) closeOption();
 });
 
-// ── AUTH STATE & INIT ────────────────────────────────────
+// ── ACCOUNT PAGE ───────────────────────────────────────
+function openAccountPage() {
+  closeOption();
+  const name = _meta.name || '';
+  const motto = _meta.motto || '';
+  document.getElementById('accountName').value = name;
+  document.getElementById('accountMotto').value = motto;
+  document.getElementById('accountAvatar').textContent = name ? name[0].toUpperCase() : '?';
+  document.getElementById('accountPage').classList.add('open');
+}
+function closeAccountPage() {
+  _meta.name = document.getElementById('accountName').value.trim();
+  _meta.motto = document.getElementById('accountMotto').value.trim();
+  persistAll();
+  const n = _meta.name;
+  document.getElementById('accountAvatar').textContent = n ? n[0].toUpperCase() : '?';
+  updateHeaderMeta();
+  document.getElementById('accountPage').classList.remove('open');
+}
+function updateHeaderMeta() {
+  const nameEl = document.getElementById('headerName');
+  const mottoEl = document.getElementById('headerMotto');
+  const sepEl = document.getElementById('headerSep');
+  if (_meta.name) { nameEl.textContent = _meta.name; nameEl.style.display=''; } else { nameEl.textContent=''; nameEl.style.display='none'; }
+  if (_meta.motto) { mottoEl.textContent = '· ' + _meta.motto; mottoEl.style.display=''; } else { mottoEl.textContent=''; mottoEl.style.display='none'; }
+}
+
+// ── COLOR PAGE ─────────────────────────────────────────
+const COLOR_PRESETS = ['#e5b8d3','#b8d3e5','#b8e5c8','#e5d4b8','#d3b8e5','#e5b8b8','#b8e5e5','#efefef'];
+function openColorPage() {
+  closeOption();
+  const swatches = document.getElementById('colorSwatches');
+  swatches.innerHTML = '';
+  const current = getComputedStyle(document.documentElement).getPropertyValue('--sel').trim();
+  COLOR_PRESETS.forEach(c => {
+    const sw = document.createElement('div');
+    sw.className = 'color-swatch' + (c === current ? ' active' : '');
+    sw.style.background = c;
+    sw.addEventListener('click', () => {
+      applyColor(c);
+      _meta.selColor = c;
+      persistAll();
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+      document.getElementById('colorCustomInput').value = c;
+    });
+    swatches.appendChild(sw);
+  });
+  document.getElementById('colorCustomInput').value = current;
+  document.getElementById('colorPreview').style.background = current;
+  document.getElementById('colorPage').classList.add('open');
+}
+function closeColorPage() { document.getElementById('colorPage').classList.remove('open'); }
+document.getElementById('colorCustomInput').addEventListener('input', e => {
+  const v = e.target.value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+    document.getElementById('colorPreview').style.background = v;
+  }
+});
+document.getElementById('colorCustomInput').addEventListener('change', e => {
+  const v = e.target.value.trim();
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+    applyColor(v); _meta.selColor = v; persistAll();
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+    document.getElementById('colorPreview').style.background = v;
+  }
+});
+
+// ── CALENDAR PAGE ──────────────────────────────────────
+function openCalPage() {
+  closeOption();
+  calYear = NOW.getFullYear(); calMonth = NOW.getMonth(); calSelDay = null;
+  renderCal();
+  document.getElementById('calPage').classList.add('open');
+}
+function closeCalPage() { document.getElementById('calPage').classList.remove('open'); }
+
+function renderCal() {
+  // Month label
+  document.getElementById('calMonthLabel').innerHTML = `<b>${MO[calMonth]}</b> ${calYear}`;
+
+  // Day headers
+  const headers = document.getElementById('calDayHeaders');
+  headers.innerHTML = '';
+  DA.forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'cal-day-header'; h.textContent = d.slice(0,3);
+    headers.appendChild(h);
+  });
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+
+  // Prev month cells
+  for (let i = 0; i < firstDay; i++) {
+    const d = prevDays - firstDay + 1 + i;
+    const pm = calMonth === 0 ? 11 : calMonth - 1;
+    const py = calMonth === 0 ? calYear - 1 : calYear;
+    grid.appendChild(makeCalCell(py, pm, d, false));
+  }
+
+  // This month cells
+  for (let d = 1; d <= daysInMonth; d++) {
+    grid.appendChild(makeCalCell(calYear, calMonth, d, true));
+  }
+
+  // Next month cells
+  const total = firstDay + daysInMonth;
+  const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+  const nm = calMonth === 11 ? 0 : calMonth + 1;
+  const ny = calMonth === 11 ? calYear + 1 : calYear;
+  for (let i = 1; i <= remaining; i++) {
+    grid.appendChild(makeCalCell(ny, nm, i, false));
+  }
+}
+
+function makeCalCell(y, m, d, inMonth) {
+  const wi = getWeekOfDay(y, m, d);
+  const dk = `Y${y}M${m}W${wi}D${d}`;
+  const goals = getG(dk);
+  const isT = y===NOW.getFullYear()&&m===NOW.getMonth()&&d===NOW.getDate();
+  const isSel = calSelDay===d && m===calMonth && y===calYear;
+
+  const cell = document.createElement('div');
+  cell.className = 'cal-cell' +
+    (inMonth ? ' in-month' : '') +
+    (isT ? ' today' : '') +
+    (isSel ? ' selected' : '');
+
+  const num = document.createElement('div');
+  num.className = 'cal-num';
+  num.textContent = d;
+  cell.appendChild(num);
+
+  // Show up to 3 goals as chips
+  const visible = goals.slice(0, 3);
+  visible.forEach((g, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'cal-goal-chip' + (g.done ? ' done' : '');
+    chip.textContent = g.title;
+    chip.addEventListener('click', e => {
+      e.stopPropagation();
+      const gs = getG(dk); gs[i].done = !gs[i].done;
+      setG(dk, gs); renderCal(); renderTodayPanel(); renderGoals();
+    });
+    cell.appendChild(chip);
+  });
+  if (goals.length > 3) {
+    const more = document.createElement('div');
+    more.className = 'cal-more';
+    more.textContent = `+${goals.length - 3} more`;
+    cell.appendChild(more);
+  }
+
+  if (inMonth) {
+    cell.addEventListener('click', () => {
+      calSelDay = d; renderCal();
+    });
+  }
+
+  return cell;
+}
+
+// ── EVENT LISTENERS ────────────────────────────────────
+document.getElementById('loginBtn').addEventListener('click', loginWithGoogle);
+document.getElementById('yearDisplay').addEventListener('click', selectYear);
+document.getElementById('yearChangeBtn').addEventListener('click', openYearOverlay);
+document.getElementById('yearOverlayClose').addEventListener('click', closeYearOverlay);
+document.getElementById('yearOverlay').addEventListener('click', e => {
+  if (e.target===document.getElementById('yearOverlay')||e.target.classList.contains('year-strip-wrap')) closeYearOverlay();
+});
+document.getElementById('goalPanel').addEventListener('click', onGoalPanelClick);
+document.getElementById('addCancelBtn').addEventListener('click', closeAdd);
+document.getElementById('addConfirmBtn').addEventListener('click', confirmAdd);
+document.getElementById('addInput').addEventListener('keydown', e => { if(e.key==='Enter')confirmAdd(); if(e.key==='Escape')closeAdd(); });
+document.getElementById('addOverlay').addEventListener('click', e => { if(e.target===document.getElementById('addOverlay'))closeAdd(); });
+document.getElementById('addBox').addEventListener('click', e => e.stopPropagation());
+
+document.getElementById('optionBtn').addEventListener('click', e => { e.stopPropagation(); toggleOption(); });
+document.getElementById('optAccountBtn').addEventListener('click', openAccountPage);
+document.getElementById('optColorBtn').addEventListener('click', openColorPage);
+document.getElementById('optCalBtn').addEventListener('click', openCalPage);
+
+document.getElementById('accountClose').addEventListener('click', closeAccountPage);
+document.getElementById('accountLogout').addEventListener('click', () => { closeAccountPage(); logout(); });
+
+document.getElementById('colorClose').addEventListener('click', closeColorPage);
+document.getElementById('calClose').addEventListener('click', closeCalPage);
+document.getElementById('calTodayBtn').addEventListener('click', () => {
+  calYear = NOW.getFullYear(); calMonth = NOW.getMonth(); calSelDay = null; renderCal();
+});
+document.getElementById('calPrev').addEventListener('click', () => {
+  calMonth--; if(calMonth<0){calMonth=11;calYear--;} calSelDay=null; renderCal();
+});
+document.getElementById('calNext').addEventListener('click', () => {
+  calMonth++; if(calMonth>11){calMonth=0;calYear++;} calSelDay=null; renderCal();
+});
+
+document.getElementById('todayToggle').addEventListener('click', () => {
+  renderTodayPanel();
+  document.getElementById('todayOverlay').classList.add('open');
+});
+document.getElementById('todayClose').addEventListener('click', () => {
+  document.getElementById('todayOverlay').classList.remove('open');
+});
+
+// ── AUTH ───────────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     _uid = user.uid;
     document.getElementById('loginScreen').classList.remove('show');
     document.getElementById('mainApp').style.display = 'flex';
-    const ui = document.getElementById('userInfo');
-    ui.textContent = user.displayName || user.email;
-    ui.classList.add('show');
     await loadAll();
+    // Apply saved color
+    if (_meta.selColor) applyColor(_meta.selColor);
+    // Update option sub with account name
+    if (_meta.name) document.getElementById('optAccountSub').textContent = _meta.name;
     document.getElementById('yearDisplay').textContent = year;
-    openMonth = -1;
-    openWeek = -1;
-    sel = null;
-    renderTree();
-    renderGoals();
-    renderTodayPanel();
+    updateHeaderMeta();
+    openMonth = -1; openWeek = -1; sel = null;
+    renderTree(); renderGoals(); renderTodayPanel();
   } else {
-    _uid = null;
-    _cache = {};
+    _uid = null; _cache = {}; _meta = {};
     document.getElementById('loginScreen').classList.add('show');
     document.getElementById('mainApp').style.display = 'none';
   }
